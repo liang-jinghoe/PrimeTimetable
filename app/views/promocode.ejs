@@ -1,0 +1,23 @@
+<html>
+	<head>
+		<title>Bid - Prime Timetable</title>
+		<link rel="icon" type="image/x-icon" href="/images/logo.png">
+		<link rel="stylesheet" href="/css/main.css" type="text/css">
+		<script src="/bid/main.js" type="text/javascript"></script>
+	</head>		
+	<body>
+		<div class="topbar">
+			<img src="/images/icon.png" style="height: 100%">
+			<input type="button" class="btn-logout" value="Logout" onclick="window.location='/logout'">
+		</div>
+  
+		<p style="color: #cfcfcf; padding: 0 10%; max-width: 1280px;"><b>Congratulations</b> on securing the exclusive <b class="highlight"><%= percent ? `${percent}%` : `RM${amount}` -%> discount</b><b> promo code</b>! Because the <b style="color: orange;">code appears only once</b> for privacy reasons, we recommend <b style="color: orange;">taking a screenshot</b> for easy reference and to ensure you don't miss it. Please note that this code can <b style="color: orange;">only be redeemed once</b>, so ensure it's utilized for either your own timetable or your friends', as it won't be available for multiple uses. Feel free to <b>log out</b> once completed.</p>
+  
+		<div style="background: repeating-linear-gradient(45deg, hsl(300 20% 20% / 1), transparent 100px);max-width: 250px;margin: 30px auto;border: 1px dimgray solid;border-radius: 5px;">
+  			<p style="opacity: 40%;margin: 5px;text-align: left;font-size: 12px;">PROMO CODE</p>
+			<p style="text-align: center; width: fit-content; padding: 10px 20px;font-size: 12px; background: black; border: 1px solid rgb(252, 194, 3); border-radius: 5px; color: rgb(252, 194, 3)"><b style="font-size: 24px;"><%= amount ? `RM${amount}` : `${percent}%` -%></b><br>OFF</p>
+     			<p><b style="font-size: 18px;"><%= code -%></b></p>
+   			<p style="color: #cfcfcf;opacity: 80%;margin: 10px 0;">Expires: <%= new Date(expiry_date).toLocaleDateString("eng-UK", {day:"numeric", month: "short", year: "numeric", timeZone: "Asia/Shanghai"}) -%></p>
+      		</div>
+
+</body></html>

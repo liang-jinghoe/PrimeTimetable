@@ -1,0 +1,119 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="/css/main.css" type="text/css">
+		<title>View - Prime Timetable</title>
+		<link rel="icon" type="image/x-icon" href="/images/logo.png">
+	</head>
+
+	<% let classes = user.courses.reduce((accumulator, course) => [ ...accumulator, ...course.slots.reduce((accumulator2, slot) => [ ...accumulator2, ...slot.classes.map(cls => { -%>
+        	<% return { code: course.code, type: slot.type, group: slot.group, time: cls.time, room: cls.room, week: cls.week, day: cls.day }; -%>
+	<% }) ], []) ], []); -%>
+
+	<% let timetableStartHour = 6; -%>
+	<% let timetableEndHour = 18; -%>
+
+	<% for (let cls of classes) { -%>
+		<% let time = cls.time; -%>
+		<% let [start, end] = time.match(/\d{1,2}\s*?:\s*?\d\d\s*?[ap]m/ig); -%>
+		<% let startMin = parseInt(start.match(/\d{2}(?=\s*?[ap]m)/i)[0]); -%>
+		<% let startHour = parseInt(start.match(/^\d{1,2}/)[0]) + startMin / 60; -%>
+		<% startHour += !!start.match(/pm/i) && startHour < 12 ? 12 : 0; -%>
+		<% let endMin = parseInt(end.match(/\d{2}(?=\s*?[ap]m)/i)[0]); -%>
+		<% let endHour = parseInt(end.match(/^\d{1,2}/)[0]) + endMin / 60; -%>
+		<% endHour += !!end.match(/pm/i) && endHour < 12 ? 12 : 0; -%>
+		<% cls.time = { start: startHour, end: endHour }; -%>
+		<% timetableStartHour = (startHour < timetableStartHour) ? Math.ceil(startHour) : timetableStartHour; -%>
+		<% timetableEndHour = (endHour > timetableEndHour) ? Math.floor(endHour) : timetableEndHour; -%>
+	<% }; -%>
+
+	<% let width = 60 + 100 * (timetableEndHour - timetableStartHour); -%>
+
+	<body>
+		<div class="topbar" style="min-width: <%= width + 20 -%>px;">
+			<img src="/images/icon.png" style="height: 100%">
+			<input type="button" class="btn-logout" value="Logout" onclick="window.location='/logout'">
+		</div>
+
+		<div style="width: <%= width + 20 -%>px; margin: 0 auto; position: relative;">
+			<h3 style="text-align: center">Payment for <%= user.id -%></h3>
+			<div class="payment-container">
+				<table>
+					<tbody>
+						<% for (let course of user.courses) { -%>
+							<tr>
+								<td><%= course.code -%><span style="opacity: 0;"> — </span><span style="color: #e8e8e8;"><%= course.slots.map(slot => slot.type + slot.group).join(", ") -%></span></td>
+							</tr>
+						<% }; -%>
+						<tr>
+							<td style="text-align: right; border-top: 1px solid white; border-bottom: 1px solid white; font-size: 22px; font-weight: bold;">RM <%= Math.max(0, user.payment.net_amount).toFixed(2) -%></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<table class="timetable" style="width: <%= width -%>px;">
+				<caption>Timetable Preview</caption>
+				<thead>
+					<tr>
+						<th></th>
+						<% for (let hour = timetableStartHour; hour < timetableEndHour; hour++) { -%>
+							<th colspan="2"><%= `${`0${hour.toString()}`.substr(-2)}:00` -%> -<br> <%= `${`0${(hour + 1).toString()}`.substr(-2)}:00` -%></th>
+						<% }; -%>
+					<tr>
+				</thead>
+				
+				<% for (let day of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) { -%>
+					<% let classesByDay = classes.filter(cls => cls.day == day); -%>
+					<% let rowSpan = 1; -%>
+					<% for (let i = 0; i < classesByDay.length; i++) { -%>
+						<% for (let j = i + 1; j < classesByDay.length; j++) { -%>
+							<% if (classesByDay[i].time.end > classesByDay[j].time.start && classesByDay[i].time.start < classesByDay[j].time.end) { -%>
+								<% rowSpan++; -%>
+							<% }; -%>
+						<% }; -%>
+					<% }; -%>
+
+					<% for (let row = 0; row < rowSpan; row++) { -%>
+						<tr>
+							<% if (row == 0) { -%>
+								<td class="day" rowSpan="<%= rowSpan -%>"><%= day -%></td>
+							<% }; -%>
+	
+							<% for (let col = 0; col < (timetableEndHour - timetableStartHour) / 0.5; col++) { -%>
+								<% let hour = timetableStartHour + col * 0.5; -%>
+								<% let clsIndex = classesByDay.findIndex(cls => cls.time.start == hour); -%>
+		
+								<% if (clsIndex > -1) { -%>
+									<% let cls = classesByDay.splice(clsIndex, 1)[0]; -%>
+									<% let { start, end } = cls.time; -%>
+									<% let durationHour = end - start; -%>
+									<% let i = 1; -%>
+									<% let color = Array.from(cls.code).reduce((accumulator, char) => accumulator + char.charCodeAt(0) * (i++ % 2 + 1) * 20, 0); -%>
+		
+									<% col += (durationHour - 0.5) / 0.5; -%>
+		
+									<td colSpan="<%= (durationHour / 0.5).toString() -%>" style="background: hsl(<%= color -%>, 30%, 30%); border: 1px solid #7d7d7d">
+										<div>
+											<p style="margin: 0px 15px 0px 0px;"><%= cls.code -%></p>
+											<b><%= cls.type -%></b>
+											<span>(</span>
+											<b><%= cls.group -%></b>
+											<span>)</span>
+										</div>
+										<div>
+											<p class="sub" style="margin: 0 auto 0 0;"><%= cls.room -%></p>
+											<p class="sub"><%= cls.week -%></p>
+										</div>
+									</td>
+								<% } else { -%>
+									<td></td>
+								<% }; -%>
+							<% }; -%>
+						</tr>
+					<% }; -%>
+				<% }; -%>
+			</table>
+		</div>
+	</body>
+</html>

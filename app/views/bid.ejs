@@ -1,0 +1,181 @@
+<html>
+	<head>
+		<title>Bid - Prime Timetable</title>
+		<link rel="icon" type="image/x-icon" href="/images/logo.png">
+		<link rel="stylesheet" href="/css/main.css" type="text/css">
+		<script src="/bid/main.js" type="text/javascript"></script>
+	</head>
+
+	<% let timetableStartHour = 6; -%>
+	<% let timetableEndHour = 18; -%>
+	<% for (let course of courses) { -%>
+		<% for (let slot of course.slots) { -%>
+			<% for (let cls of slot.classes) { -%>
+				<% let time = cls.time; -%>
+				<% let [start, end] = time.match(/\d{1,2}\s*?:\s*?\d\d\s*?[ap]m/ig); -%>
+				<% let startMin = parseInt(start.match(/\d{2}(?=\s*?[ap]m)/i)[0]); -%>
+				<% let startHour = parseInt(start.match(/^\d{1,2}/)[0]) + startMin / 60; -%>
+				<% startHour += !!start.match(/pm/i) && startHour < 12 ? 12 : 0; -%>
+				<% let endMin = parseInt(end.match(/\d{2}(?=\s*?[ap]m)/i)[0]); -%>
+				<% let endHour = parseInt(end.match(/^\d{1,2}/)[0]) + endMin / 60; -%>
+				<% endHour += !!end.match(/pm/i) && endHour < 12 ? 12 : 0; -%>
+				<% timetableStartHour = (startHour < timetableStartHour) ? Math.ceil(startHour) : timetableStartHour; -%>
+				<% timetableEndHour = (endHour > timetableEndHour) ? Math.floor(endHour) : timetableEndHour; -%>
+			<% }; -%>
+		<% }; -%>
+	<% }; -%>
+	<% let width = 60 + 100 * (timetableEndHour - timetableStartHour); -%>
+
+	<body>
+		<div class="topbar" style="min-width: <%= width + 20 -%>px;">
+			<img src="/images/icon.png" style="height: 100%">
+			<input type="button" class="btn-logout" value="Logout" onclick="window.location='/logout'">
+		</div>
+
+		<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: <%= width + 20 -%>px;">Please take a moment to choose and organize your preferred slots by simply <b class="highlight">clicking</b> on any of the <b class="highlight">available options</b> in the '<b>Slots Selection</b>' section.</p>
+		<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: <%= width + 20 -%>px;">During the course registration starting period, you <b style="color: #e8a827;">won't be able to log in</b> and <b style="color: #e8a827;">bid</b> for <b>specific slots</b>. Therefore, it is vital to <b class="highlight">select all the slots</b> according to your programme structure without intentionally leaving any compulsory ones unselected.</p>
+
+		<div style="width: <%= width + 20 -%>px; margin: 0 auto; position: relative;">
+			<div class="preview">
+				<table class="timetable" style="width: <%= width -%>px;">
+					<caption>Timetable Preview</caption>
+					<thead>
+						<tr>
+							<th></th>
+							<% for (let hour = timetableStartHour; hour < timetableEndHour; hour++) { -%>
+								<th colspan="2"><%= `${`0${hour.toString()}`.substr(-2)}:00` -%> -<br> <%= `${`0${(hour + 1).toString()}`.substr(-2)}:00` -%></th>
+							<% }; -%>
+						<tr>
+					</thead>
+					<% for (let day of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) { -%>
+						<tr>
+							<td class="day"><%= day -%></td>
+							<% for (let i = 0; i < (timetableEndHour - timetableStartHour) / 0.5; i++) { -%>
+								<td></td>
+							<% }; -%>
+						</tr>
+					<% }; -%>
+				</table>
+			</div>
+			
+			<table class="slots">
+				<caption>
+					<form method="POST" style="display: flex;">
+						<input hidden type="text" name="slots"></input>
+						<div class="button-container" style="margin: 0 auto 0 0;">
+							<button type="submit" style="background-color: royalblue;" formmethod="GET" formaction="/bid/download">Download selected slots</button>
+							<input type="file" id="file" name="file" accept=".txt" style="display: none;">
+							<label for="file" style="background-color: grey;" class="button">Upload slots</label>
+						</div>
+						<span class="error"><%= message -%></span>
+						<div class="button-container" style="margin: 0 0 0 auto;">
+							<button type="submit" onclick="onSubmit()">Confirm</button>
+						</div>
+					</form>
+					Slots Selection
+				</caption>
+				<thead>
+					<tr>
+						<% for (let header of headers) { -%>
+							<th><%= header.charAt(0).toUpperCase() + header.slice(1) -%></th>
+						<% }; -%>
+					</tr>
+				</thead>
+				<% if (courses.length == 0) { -%>
+					<tbody>
+						<tr>
+							<td colspan="<%= headers.length -%>" style="color: dimgray; border: 1px dimgray solid; text-align: center;">Slots are currently not available</td>
+						</tr>
+					</tbody>
+				<% }; -%>
+				<% for (let course of courses) { -%>
+					<% let i = 1; -%>
+					<% let color = Array.from(course.code).reduce((accumulator, char) => accumulator + char.charCodeAt(0) * (i++ % 2 + 1) * 20, 0); -%>
+					<tbody class="course clickable" style="background: hsl(<%= color -%>, 30%, 30%)" onclick="toggleSlots(this)">
+						<tr>
+							<td colspan="<%= headers.length -%>"><%= `▷ ${course.code} — ${course.name} [ ${course.credit_hours} ]` -%></td>
+						</tr>
+					</tbody>
+					<% for (let slot of course.slots) { -%>
+
+						<% if (slot.closed) { -%>
+							<tbody class="slot unavailable <%= `code:${course.code} type:${slot.type} group:${slot.group}` -%>" style="display: none;">
+						<% } else { -%>
+							<tbody class="slot highlightable clickable <%= `code:${course.code} type:${slot.type} group:${slot.group}` -%>" style="display: none;" onclick="selectSlot(this)" onmouseover="showSlotPreview(this)" onmouseout="hideSlotPreview(this)">
+						<% }; -%>
+						
+							<% let mainClass = slot.classes[0]; -%>
+							<tr id="<%= mainClass.time -%>" class="<%= `day:${mainClass.day} week:${mainClass.week} room:${mainClass.room.replace(/\s/g, '_')}` -%>">
+								<% for (let header of headers) { -%>
+									<% if (slot[header] !== undefined && slot.classes.length > 1) { -%>
+										<td class="<%= header -%>" rowspan="<%= slot.classes.length -%>">
+											<% if (header.match(/remark/i)) { -%>
+												<span class="closed"><%= slot.closed ? "Closed" : "" -%></span>
+											<% }; -%>
+											<%= slot[header] -%>
+										</td>
+									<% } else { -%>
+										<td class="<%= header -%>">
+											<% if (header.match(/remark/i)) { -%>
+												<span class="closed"><%= slot.closed ? "Closed" : "" -%></span>
+											<% }; -%>
+											<%= slot[header] || mainClass[header] -%>
+										</td>
+									<% }; -%>
+								<% }; -%>
+							</tr>
+							<% for (let subClass of slot.classes.slice(1)) { -%>
+								<tr id="<%= subClass.time -%>" class="<%= `day:${subClass.day} week:${subClass.week} room:${subClass.room.replace(/\s/g, '_')}` -%>">
+									<% for (let header of headers) { -%>
+										<% if (subClass[header]) { -%>
+											<td class="<%= header -%>"><%= subClass[header] -%></td>
+										<% }; -%>
+									<% }; -%>
+								</tr>
+							<% }; -%>
+						</tbody>
+					<% }; -%>
+				<% }; -%>
+			</table>
+		</div>
+	</body>
+	<script>
+		function updateSlots(selectedSlots, byUser) {
+			for (let selectedSlot of selectedSlots) {
+				let [code, type, group] = selectedSlot.split("-");
+				let element = document.getElementsByClassName(`code:${code} type:${type} group:${group}`)[0];
+
+				if (element)
+					if (byUser)
+						element.click();
+					else
+						selectSlot(element, true);
+			};
+
+			updateTimetable();
+		};
+
+		getSlots().then(updateSlots);
+
+		document.getElementById("file").addEventListener("change", function(e) {
+			if (!e.target.files[0])
+				return;
+
+			let file = new FileReader();
+
+			file.onloadend = function() {
+				let selectedSlots = file.result.split(/\s*,\s*/);
+				let selectedTbodies = Object.values(document.getElementsByClassName("selected"));
+
+				for (let tbody of selectedTbodies) {
+					unselectSlot(tbody);
+					tbody.onmouseout();
+				};
+
+				updateSlots(selectedSlots, true);
+			};
+
+			file.readAsText(e.target.files[0]);
+		});
+	</script>
+</html>

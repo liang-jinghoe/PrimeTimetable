@@ -1,0 +1,304 @@
+* {
+	font-family: Google Sans,Roboto,HelveticaNeue,Arial,sans-serif;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	background-color: #1e1e1e;
+	color: #ffffff;
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+.topbar {
+	height: 50px;
+  	width: 100%;
+    	padding: 10px 0;
+  	background-color: #1c001a;
+  	border-bottom: solid 1px #c28fbe
+}
+
+table {
+	width: 90%;
+	border-collapse: collapse;
+	margin: 20px auto;
+}
+
+th, td {
+	padding: 8px;
+}
+
+th {
+	border: 1px solid #555555;
+	background-color: #3c3c3c;
+	color: #ffffff;
+}
+
+.preview {
+	position: sticky;
+	top: -50px;
+	background: #1e1e1e;
+	z-index: 1;
+	padding: 1px;
+}
+
+.previewSlot:hover {
+	opacity: 80%
+}
+
+.timetable {
+	width: 1000px;
+	border-collapse: collapse;
+	margin: 20px auto; /* Add margin for spacing */
+}
+
+.timetable th, .timetable td {
+	padding: 10px;
+	text-align: center;
+	color: #d7d7d7;
+}
+
+.timetable td {
+	border: 1px dashed #414141;
+	background-color: #191919
+}
+
+.timetable td.day {
+	border: 1px solid #555555;
+	background-color: #282828
+}
+
+.timetable div {
+	display: flex;
+}
+
+.timetable p {
+	margin: 0px;
+	text-align: left;
+}
+
+.timetable p.sub {
+	font-size: 14px;
+	color: #bfbfbf;
+}
+
+.course {
+	border: 1px solid #555555;
+	background-color: #555555;
+	color: #ffffff;
+	text-align: left;
+}
+
+.slot th, .slot td {
+	border: 1px solid #555555;
+	background-color: #333;
+	text-align: center;
+	color: #c8c8c8;
+}
+
+.slot td.size, .slot td.hour, .slot td.week {
+	color: #999999;
+}
+
+td.remark {
+	position: relative;
+}
+
+.unavailable td.size, .unavailable td.hour, .unavailable td.week {
+	color: #424242;
+}
+
+.highlightable:hover {
+	opacity: 80%
+}
+
+.clickable {
+	cursor: pointer;
+}
+
+.selected {
+	font-weight: bold
+}
+
+.selected td {
+	border: 1px solid #dbdbdb;
+	background-color: #3c3c3c;
+	color: white;
+}
+
+.unavailable th, .unavailable td {
+	background-color: #1e1e1e;
+	color: #666666;
+	border: 1px solid #323232;
+}
+
+span.closed {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	color: #cc4e4e;
+	font-size: 14px;
+}
+
+button, .button {
+	background-color: #db7dc7;
+	color: #ffffff;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	font-size: 16px;
+	font-weight: normal;
+	cursor: pointer;
+}
+
+button:hover, .button:hover {
+	opacity: 80%
+}
+
+
+.container {
+	max-width: 400px;
+	margin: 0 auto;
+	padding: 0 10px;
+}
+
+.button-container {
+	text-align: right;
+	margin: 10px auto; /* Adjust margin as needed */
+}
+
+h1.title {
+	font-size: 24px;
+	text-align: center;
+	padding-top: 20px;
+}
+
+caption {
+	text-align: left;
+	margin: 12px auto;
+	color: #dcdcdc;
+	font-size: 18px;
+	font-weight: bold
+}
+
+p {
+	font-size: 16px;
+	text-align: center;
+	margin: 20px auto;
+}
+
+a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #2980b9;
+}
+
+a:visited {
+  color: #9b59b6;
+}
+
+a:active {
+  color: #e74c3c;
+}
+
+b.highlight {
+	color: #db7dc7;
+}
+
+.login-frame {
+	border: 1px solid #333;
+	/* Add a border around the login frame */
+	padding: 20px;
+	border-radius: 10px;
+	/* Add rounded corners to the frame */
+	margin-top: 30px;
+	background: #222222;
+}
+
+.form-group {
+	margin-bottom: 20px;
+}
+
+.form-group label {
+	display: block;
+	font-size: 14px;
+}
+
+.form-group input {
+	width: 90%;
+	margin: 10px auto;
+	padding: 10px 10px 10px 10px;
+	background-color: #333;
+	color: #ffffff;
+	border: none;
+	border-radius: 5px;
+}
+
+.captcha {
+	text-align: center;
+	margin: 20px;
+}
+
+.captcha img {
+	max-width: 100%;
+	height: auto;
+}
+
+.btn-login {
+	display: block;
+	width: 100%;
+	padding: 10px;
+	background-color: #db7dc7;
+	color: #ffffff;
+	border: none;
+	border-radius: 5px;
+	font-size: 16px;
+	cursor: pointer;
+}
+
+.btn-logout {
+	background-color: #333;
+	color: #ffffff;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	font-size: 16px;
+	cursor: pointer;
+	position: absolute;
+	top: 20px;
+	right:20px;
+}
+
+.btn-logout:hover {
+	background-color: #404040;
+}
+
+.payment-container {
+	width: 400px;
+	margin: 20px auto;
+	border: 1px solid #383838;
+	background: #141414;
+}
+
+.flex-container {
+	width: 400px;
+	margin: 0 auto;
+	display: flex
+}
+
+.flex-child {
+	flex: 1;
+}
+
+.error {
+	color: #f54242;
+	margin: auto;
+	font-weight: normal;
+}

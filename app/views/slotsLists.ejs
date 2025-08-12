@@ -1,0 +1,107 @@
+<html>
+	<head>
+		<title>Slots Lists - Prime Timetable</title>
+		<link rel="icon" type="image/x-icon" href="/images/logo.png">
+		<link rel="stylesheet" href="/css/main.css" type="text/css">
+		<script>
+			var dateFromObjectId = function (objectId) {
+				return new Date(parseInt(objectId.substring(0, 8), 16) * 1000);
+			};
+
+			function selectAll() {
+				let trs = Array.from(document.querySelectorAll("tbody > tr"));
+
+				for (let tr of trs) {
+					let objectId = tr.querySelector("a").href.match(/(?<=objectid\=)[a-z0-9]+/i).toString();
+
+					if (new Date() - dateFromObjectId(objectId) < 60000 * 60 * 24 * 30) {
+						tr.querySelector("input[type=checkbox]").click();
+					}
+				}
+			};
+		</script>
+	</head>
+
+	<body>
+		<div class="topbar">
+			<img src="/images/icon.png" style="height: 100%">
+			<input type="button" class="btn-logout" value="Logout" onclick="window.location='/logout'">
+		</div>
+
+		<div class="button-container" style="padding: 0 5%">
+	  		<form method="POST">
+				<button type="submit" formaction="/admin/toggle"><%= paid ? "Pending" : "Paid" -%></button>
+				<input type="button" onclick="selectAll()" class="button" value="Select All">
+				<button type="submit" formaction="/admin/refresh">Refresh</button>
+				<button type="submit" formaction="/admin/update">Update</button>
+				<button type="submit" onclick="onSubmit()">Login</button>
+				<button type="submit" formaction="/admin/bid">Bid</button>
+
+				<table class="timetable" style="width: 100%">
+					<caption>Slots Lists</caption>
+					<colgroup>
+						<col style="width: 42px">
+						<col style="width: 110px">
+						<col style="width: 110px">
+						<col style="width: 170px">
+					</colgroup>
+					<thead>
+						<tr>
+							<th>No</th>
+							<th>User Id</th>
+							<th>Status</th>
+							<th>Time</th>
+							<th>Slots</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% let no = 0; -%>
+						<% for (let user of users) { -%>
+							<tr>
+								<td style="text-align: right;"><%= no += 1; -%></td>
+								<td>
+									<input type="checkbox" name="_ids" value="<%= user._id -%>">
+									<span title="<%= user.name || "" -%>"><%= user.id -%></span>
+								</td>
+								<td style="color: <%= user.loggedIn ? "lightgreen" : (user.loginError ? "orange" : "#d7d7d7") -%>"><%= user.loggedIn ? "Logged In" : (user.loginError ? user.loginError : "Logged Out") -%></td>
+								<td><%= user.time ? new Date(user.time).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" }) : "" -%></td>
+								<td style="text-align: left">
+									<a href="/admin/view?objectid=<%= user._id -%>">
+										<% for (let course of user.courses) { -%>
+											<b title="<%= course.error || "" -%>" style="color: <%= course.status ? (course.status == "Error" ? "#f54242" : (course.valid ? (course.error ? "orange" : "lightgreen") : (!!course.error.match(/redirected/i) ? "yellow" : "dimgrey"))) : "#d7d7d7" -%>;"><%= course.code -%></b>
+	
+											<span style="opacity: 0">: </span>
+	
+											<% for (let slot of course.slots) { -%>
+												<i style="color: <%= course.status && slot.id != null ?  (slot.id ? "lightgreen" : (slot.valid ? "orange" : "dimgrey")) : "#d7d7d7" -%>;"> <%= slot.type + slot.group -%> </i>
+	
+												<% if (course.slots[course.slots.length - 1] != slot) { -%>
+													<span style="opacity: 0">, </span>
+												<% }; -%>
+											<% }; -%>
+	
+											<% if (user.courses[user.courses.length - 1] != course) { -%>
+												<span style="opacity: 0"> —— </span>
+											<% }; -%>
+										<% }; -%>
+									</a>
+								</td>
+							</tr>
+						<% }; -%>
+					</tbody>
+				</table>
+			</form>
+		</div>
+		<script>
+			let checkboxes = Array.from(document.querySelectorAll("input[type=checkbox]"));
+
+			for (let checkbox of checkboxes) {
+				checkbox.parentElement.onclick = function(e) {
+					if (e.target != checkbox) {
+						checkbox.click();
+					}
+				}
+			}
+		</script>
+	</body>
+</html>

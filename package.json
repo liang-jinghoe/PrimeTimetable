@@ -1,0 +1,22 @@
+{
+	"name": "utar_timetable",
+	"description": "",
+	"version": "1.0.0",
+	"private": true,
+	"engines": {
+		"node": ">=18"
+	},
+	"dependencies": {
+		"express": "latest",
+		"cookie-parser": "latest",
+		"node-fetch": "latest",
+		"pg": "latest",
+		"ejs": "latest",
+		"mongodb": "latest",
+		"cacheable-lookup": "latest"
+	},
+	"type": "module",
+	"scripts": {
+		"start": "node index.js"
+	}
+}

@@ -1,0 +1,181 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="/css/main.css" type="text/css">
+		<title>Payment - Prime Timetable</title>
+		<link rel="icon" type="image/x-icon" href="/images/logo.png">
+	</head>
+
+	<% let classes = slots.reduce((accumulator, slot) => [ ...accumulator, ...courses.find(course => course.code == slot.code).slots.find(slt => slt.type == slot.type && slt.group == slot.group).classes.map(cls => { -%>
+		<% return { code: slot.code, type: slot.type, group: slot.group, time: cls.time, room: cls.room, week: cls.week, day: cls.day }; -%>
+	<% }) ], []) -%>
+
+	<% let timetableStartHour = 6; -%>
+	<% let timetableEndHour = 18; -%>
+
+	<% for (let cls of classes) { -%>
+		<% let time = cls.time; -%>
+		<% let [start, end] = time.match(/\d{1,2}\s*?:\s*?\d\d\s*?[ap]m/ig); -%>
+		<% let startMin = parseInt(start.match(/\d{2}(?=\s*?[ap]m)/i)[0]); -%>
+		<% let startHour = parseInt(start.match(/^\d{1,2}/)[0]) + startMin / 60; -%>
+		<% startHour += !!start.match(/pm/i) && startHour < 12 ? 12 : 0; -%>
+		<% let endMin = parseInt(end.match(/\d{2}(?=\s*?[ap]m)/i)[0]); -%>
+		<% let endHour = parseInt(end.match(/^\d{1,2}/)[0]) + endMin / 60; -%>
+		<% endHour += !!end.match(/pm/i) && endHour < 12 ? 12 : 0; -%>
+		<% cls.time = { start: startHour, end: endHour }; -%>
+		<% timetableStartHour = (startHour < timetableStartHour) ? Math.ceil(startHour) : timetableStartHour; -%>
+		<% timetableEndHour = (endHour > timetableEndHour) ? Math.floor(endHour) : timetableEndHour; -%>
+	<% }; -%>
+
+	<% let width = 60 + 100 * (timetableEndHour - timetableStartHour); -%>
+
+	<body>
+		<div class="topbar" style="min-width: <%= width + 20 -%>px;">
+			<img src="/images/icon.png" style="height: 100%">
+			<input type="button" class="btn-logout" value="Logout" onclick="window.location='/logout'">
+		</div>
+
+		<% if (payment.paid) { -%>
+			<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: <%= width + 20 -%>px;">Your payment has been <b style="color: lightgreen;">successfully</b> processed, and we want to extend our sincere thanks for choosing our website.</p>
+			<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: <%= width + 20 -%>px;">Please be reminded that <b>Course Registration</b> website only allows <b>one device login</b> at any given time. We sincerely request for your cooperation in <b style="color: #e8a827;">not to log in</b> to the website <b style="color: #e8a827;">3 minutes</b> <b>before</b> and <b>after</b> the course registration <b>starting period</b>.</p>
+			<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: 1280px;">Any further enquires please contact +60 11-6228 2890 via WhatsApp.</p>
+		<% } else if (payment.id) { -%>
+			<!--
+				<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: <%= width + 20 -%>px;">Please ensure the <b>correct total amount specified below</b> is transferred to the designated <b class="highlight">Maybank account</b> by either scanning the following <b>QR code</b> or entering the <b>account ID</b>, and don't forget to <b>include</b> the provided <b class="highlight">payment ID</b> in your <b>transaction description</b>.</p>
+				<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: <%= width + 20 -%>px;">Please note that the <b>Course Registration</b> website only allows <b>one device login</b> at any given time. We respectfully request your cooperation in <b style="color: #e8a827;">refraining from attempting to log in</b> to the website approximately <b style="color: #e8a827;">3 minutes</b> <b>before</b> and <b>after</b> the course registration <b>starting period</b>.</p>
+			-->
+		<% } else { -%>
+			<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: <%= width + 20 -%>px;">Before proceeding with payment, please <b class="highlight">double-check</b> that all the <b>selected slots</b> are <b>correct</b>. Your payment and chosen slots will be securely recorded, and no information will be publicly displayed on this website to safeguard your data. Capture a <b>screenshot</b> of your payment if needed. <b>Refunds</b> guaranteed for unsuccessful bids.</p>
+		<% }; -%>
+
+		<br>
+
+		<div style="width: <%= width + 20 -%>px; margin: 0 auto; position: relative;">
+			<h3 style="text-align: center">Payment</h3>
+			<div class="payment-container">
+				<table>
+					<tbody>
+						<% for (let item of payment.items) { -%>
+							<tr>
+								<td><%= item.name -%><span style="opacity: 0;"> — </span><span style="color: #e8e8e8;"><%= item.description -%></span></td>
+								<td style="text-align: right;">RM <%= item.unit_amount.value -%></td>
+							</tr>
+						<% }; -%>
+						<% if (payment.discounts.length > 0) { -%>
+							<tr><td></td></tr>
+
+							<% for (let discount of payment.discounts) { -%>
+								<tr>
+									<td><%= discount.description -%></td>
+									<td style="text-align: right;">(-<%= discount.percent ? `${discount.percent.toFixed(0)}%` : `RM ${discount.amount.toFixed(2)}` -%>)</td>
+								</tr>
+							<% }; -%>
+						<% }; -%>
+						<tr>
+							<td colSpan="2" style="text-align: right; border-top: 1px solid white; border-bottom: 1px solid white; font-size: 22px; font-weight: bold;">RM <%= Math.max(0, payment.netTotal).toFixed(2) -%></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+	
+			<% if (payment.paid) { -%>
+				<h3 style="text-align: center; color: lightgreen">✔ Payment successful</h3>
+			<% } else if (false && payment.id) { // Debugging -%>
+				<p>Payment ID: <b style="color: lightgreen;"><%= payment.id.toString() -%></b></p>
+				<p>Maybank Account: 114209473446</p>
+				<img src="/images/qr.png">
+			<% } else if (payment.id) { // Debugging -%>
+				<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: 1280px;">The system currently support payment via <b style="color: #3498db;">Touch 'n Go eWallet account</b> only:
+					<br>
+					<img src="/images/tng_qr.png" style="height: 350px; margin: 10px">
+					<br>
+					Once scanned the QR code above, please enter the <b>correct transfer amount as stated above</b>, followed by the <b style="color: lightgreen">Payment ID: <%= payment.id -%></b> in the <b>transaction reference</b>.
+				</p>
+				<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: 1280px;">Your timetable will be arranged into the queue for bidding once we receive the corresponding transaction. Please be reminded that <b>Course Registration</b> website only allows <b>one device login</b> at any given time. We sincerely request for your cooperation in <b style="color: #e8a827;">not to log in</b> to the website <b style="color: #e8a827;">3 minutes</b> <b>before</b> and <b>after</b> the course registration <b>starting period</b>.</p>
+				<p style="color: #cfcfcf; padding: 0 10%; text-align: left; max-width: 1280px;">Any further enquires please contact +60 11-6228 2890 via WhatsApp.</p>
+			<% } else { -%>
+				<div class="flex-container">
+					<div class="flex-child">
+						<form method="POST" id="promoCodeForm" class="form-group">
+							<input type="text" name="promoCode" value="<%= promoCode -%>" placeholder="Promo Code" onfocusout="submit()" style="width: 180px; margin: 0 auto; border: <%= promoCode ? (payment.promoCode ? "1px solid lightgreen" : "1px solid #f54242") : "none"  -%>" maxlength="19">
+						</form>
+					</div>
+					<div class="flex-child">
+						<% if (payment.netTotal <= 0) { -%>
+							<form method="POST" action="/payment/capture-paypal-order">
+								<button type="submit" style="width: 210px;">Pay with <b>Promo Code</b></button>
+							</form>
+						<% } else { -%>
+							<form method="POST" action="/payment/capture-paypal-order">
+								<button type="submit" style="width: 210px;">Pay with <b>Digital Wallet</b></button>
+							</form>
+						<% }; -%>
+					</div>
+				</div>
+			<% }; -%>
+
+			<table class="timetable" style="width: <%= width -%>px;">
+				<caption>Timetable Preview</caption>
+				<thead>
+					<tr>
+						<th></th>
+						<% for (let hour = timetableStartHour; hour < timetableEndHour; hour++) { -%>
+							<th colspan="2"><%= `${`0${hour.toString()}`.substr(-2)}:00` -%> -<br> <%= `${`0${(hour + 1).toString()}`.substr(-2)}:00` -%></th>
+						<% }; -%>
+					<tr>
+				</thead>
+				
+				<% for (let day of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) { -%>
+					<% let classesByDay = classes.filter(cls => cls.day == day); -%>
+					<% let rowSpan = 1; -%>
+					<% for (let i = 0; i < classesByDay.length; i++) { -%>
+						<% for (let j = i + 1; j < classesByDay.length; j++) { -%>
+							<% if (classesByDay[i].time.end > classesByDay[j].time.start && classesByDay[i].time.start < classesByDay[j].time.end) { -%>
+								<% rowSpan++; -%>
+							<% }; -%>
+						<% }; -%>
+					<% }; -%>
+
+					<% for (let row = 0; row < rowSpan; row++) { -%>
+						<tr>
+							<% if (row == 0) { -%>
+								<td class="day" rowSpan="<%= rowSpan -%>"><%= day -%></td>
+							<% }; -%>
+	
+							<% for (let col = 0; col < (timetableEndHour - timetableStartHour) / 0.5; col++) { -%>
+								<% let hour = timetableStartHour + col * 0.5; -%>
+								<% let clsIndex = classesByDay.findIndex(cls => cls.time.start == hour); -%>
+		
+								<% if (clsIndex > -1) { -%>
+									<% let cls = classesByDay.splice(clsIndex, 1)[0]; -%>
+									<% let { start, end } = cls.time; -%>
+									<% let durationHour = end - start; -%>
+									<% let i = 1; -%>
+									<% let color = Array.from(cls.code).reduce((accumulator, char) => accumulator + char.charCodeAt(0) * (i++ % 2 + 1) * 20, 0); -%>
+		
+									<% col += (durationHour - 0.5) / 0.5; -%>
+
+									<td colSpan="<%= (durationHour / 0.5).toString() -%>" style="background: hsl(<%= color -%>, 30%, 30%); border: 1px solid #7d7d7d">
+										<div>
+											<p style="margin: 0px 15px 0px 0px;"><%= cls.code -%></p>
+											<b><%= cls.type -%></b>
+											<span>(</span>
+											<b><%= cls.group -%></b>
+											<span>)</span>
+										</div>
+										<div>
+											<p class="sub" style="margin: 0 auto 0 0;"><%= cls.room -%></p>
+											<p class="sub"><%= cls.week -%></p>
+										</div>
+									</td>
+								<% } else { -%>
+									<td></td>
+								<% }; -%>
+							<% }; -%>
+						</tr>
+					<% }; -%>
+				<% }; -%>
+			</table>
+		</div>
+	</body>
+</html>

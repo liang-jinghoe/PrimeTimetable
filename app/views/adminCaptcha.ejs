@@ -1,0 +1,48 @@
+<html>
+	<head>
+		<title>Admin Captcha - UTAR Timetable</title>
+		<link rel="icon" type="image/x-icon" href="/images/logo.png">
+		<link rel="stylesheet" href="/css/main.css" type="text/css">
+	</head>
+	<body>
+		<div class="topbar">
+			<img src="/images/icon.png" style="height: 100%">
+			<input type="button" class="btn-logout" value="Logout" onclick="window.location='/logout'">
+		</div>
+
+		<div class="button-container" style="padding: 0 5%">
+			<form method="POST">
+				<input type="button" value="Slots Lists" onclick="window.location='/admin/keyin'" class="button">
+				<button type="submit" onclick="onSubmit()">Login</button>
+
+				<table class="timetable" style="width: 100%">
+					<tbody>
+						<thead>
+							<tr>
+								<th>No</th>
+								<th>User Id</th>
+								<th>Status</th>
+								<th>Message</th>
+								<th>Captcha Image</th>
+								<th>Captcha</th>
+								<th>Auto Bid</th>
+							</tr>
+						</thead>
+						<% let no = 0; -%>
+						<% for (let user of users.filter(user => user.selected)) { -%>
+							<tr>
+								<td style="text-align: right;"><%= no += 1; -%></td>
+								<td><%= user.id -%></td>
+								<td style="color: <%= user.loggedIn ? "lightgreen" : (user.loginError ? "orange" : "#d7d7d7") -%>"><%= user.loggedIn ? "Logged In" : (user.loginError ? "Log in Failed" : "Logging in") -%></td>
+								<td><%= user.loginError || "" -%></td>
+								<td><img src="/captcha.jpg?cookie=<%= user.cookie -%>"></td>
+								<td class="form-group"><input type="text" name="captcha_<%= user.id -%>" maxlength="5"></td>
+								<td><input checked type="checkbox" name="autobid_<%= user.id -%>"></td>
+							</tr>
+						<% }; -%>
+					</tbody>
+				</table>
+			</form>
+		</div>
+	</body>
+</html>
